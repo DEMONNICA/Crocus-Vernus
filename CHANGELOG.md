@@ -4,60 +4,54 @@
 
 > [5.5.0]
 >
-> - Added `module_remove_check()` to `customize.sh` — replaces inline deletion logic with a proper named function.
+> - Added `module_remove_check()` to `customize.sh` — removes old module before installation.
 > - Added full `detect_root_all()` to `customize.sh` — replaces simple 3-line root detection with comprehensive multi-variant detection for KernelSU, Magisk, and APatch including spoofed variants, writes `.method` file on detection.
-> - Added `VortexSU` to `detect_root_all()` in `customize.sh` and spoofed fallback handling in `service.sh`.
+> - Added `VortexSU` to `detect_root_all()` in `customize.sh` — detected via `com.vortexsu.vortexsu`, spoofed variant handled in `ksud` fallback.
 > - Added `Kokoro Mask` to Magisk variant detection in `customize.sh`.
-> - Added `aapt`-based spoofed variant fallback to `detect_root_all()` in `customize.sh`, checked before the generic `ksud` output fallback.
+> - Added `aapt`-based spoofed variant fallback to `detect_root_all()` in `customize.sh`, checked before the generic `ksud` fallback.
 > - Added `device_info()` to `customize.sh` — merges `print_time()` and `print_device()` into a single function covering time, module version, device, RAM, Android codename, and kernel info.
 > - Added `set_donate_link()` to `customize.sh` — inserts timezone-aware donate link (PayPal or Sociabuzz) into `module.prop` after banner line.
-> - Added `wait_boot()` to `cv` — waits for `sys.boot_completed=1` before running any optimization.
 > - Added `backup_val()` to `cv` — saves original sysctl value to `$MODDIR/backup` before overwriting, skips if backup already exists.
 > - Added `tune_kernel()` to `cv` — extracts kernel parameter tuning into a dedicated function.
 > - Added `tune_vm()` to `cv` — extracts VM parameter tuning into a dedicated function.
 > - Added `tune_net()` to `cv` — extracts network parameter tuning into a dedicated function.
 > - Added `cleanup_temp()` to `cv` — extracts temporary file cleanup into a dedicated function.
-> - Changed `cv()` — integrated `backup_val()` call and added `|| true` for silent fail on read-only paths.
+> - Added full root detection from `.method` file to `service.sh` — reads KernelSU, Magisk, and APatch method and version on boot.
+> - Changed `cv()` in `cv` — integrated `backup_val()`, removed `chown root:root`, `chmod 644`, and `chmod 444`, now writes directly with `echo` and `2>/dev/null || true`.
 > - Changed shebang in `cv` from `#!/bin/sh` to `#!/system/bin/sh`.
 > - Changed `optimize_zram` in `cv` — added `/proc/swaps` check before reset to prevent race condition.
-> - Changed `sleep` delay in `cv` `main()` — reduced from 2 to 1 second between functions.
-> - Changed `tune_governor()` call in `cv` `main()` — now called twice with `sleep 3` between calls to handle governor reset by system after boot.
-> - Changed `drop_caches` in `cv` — no longer written via `cv()`, now written directly with `echo` to avoid `chmod 444` locking the trigger file.
-> - Changed `set_permissions()` in `customize.sh` — added `service.sh` to the executable permission loop.
-> - Changed `post_install_actions` in `customize.sh` — wrapped into a proper named function.
-> - Changed devil messages in `customize.sh` — expanded from 11 to 15 names.
-> - Changed devil messages in `customize.sh` — removed per-name descriptions, now prints name only.
-> - Changed Android codename list in `customize.sh` — added SDK 32 (Snow Cone SL) and SDK 37 (Cinnamon Bun).
-> - Changed `verify_module()` verified message in `customize.sh` — removed emoji, now outputs `Verified Success`.
-> - Changed `uninstall.sh` — added sysctl restore loop that reads from `$MODDIR/backup` and writes back original values before cleanup.
-> - Changed `uninstall.sh` — added `.method` file deletion for KernelSU, Magisk, and APatch directories.
-> - Changed `uninstall.sh` — replaced extension-based file deletion in `/data/user_de` and `/data` with system cache directory cleanup covering `/data/cache`, `/data/dalvik-cache`, `/data/resource-cache`, `/data/system/dropbox`, and `/data/tombstones`.
-> - Changed `uninstall.sh` — added `fstrim` across all major partitions on uninstall.
-> - Changed `uninstall.sh` — added `exit 0` at end of script.
-> - Changed `MODDIR` detection in `uninstall.sh` — replaced `cd/dirname/pwd` with `readlink -f`.
 > - Changed `detect_root_all()` structure in `customize.sh` — replaced `if/elif` chains with loop-based detection using `pkg:label` entries.
 > - Changed root detection order in `customize.sh` and `service.sh` — now APatch → KernelSU → Magisk (previously KernelSU → Magisk → APatch).
 > - Changed APatch `.method` file format in `customize.sh` and `service.sh` — expanded from 4 to 5 lines, adds `APATCH_APP_VER` on line 3.
 > - Changed `APATCH_VER_CODE` source in `customize.sh` — now read from `/data/adb/ap/version`, falls back to `.method` line 5 if unavailable.
+> - Changed `set_permissions()` in `customize.sh` — added `service.sh` to the executable permission loop.
+> - Changed `post_install_actions` in `customize.sh` — wrapped into a proper named function.
+> - Changed devil messages in `customize.sh` — expanded from 11 to 15 names, removed per-name descriptions.
+> - Changed Android codename list in `customize.sh` — added SDK 32 (Snow Cone SL) and SDK 37 (Cinnamon Bun).
+> - Changed `verify_module()` verified message in `customize.sh` — removed emoji, now outputs `Verified Success`.
 > - Changed `service.sh` — root detection now reads from `.method` file instead of inline detection.
 > - Changed `MODDIR` detection in `service.sh` — replaced `cd/dirname/pwd` with `dirname/readlink -f`.
 > - Changed description format in `service.sh` — removed emoji and Android version, now outputs `✅ ${ROOT_METHOD} (${ROOT_VERSION}) | Improve the speed and smoothness...`.
+> - Changed `uninstall.sh` — restore logic now reads from `$MODDIR/backup` and writes back original values before cleanup, with ZRAM handled separately.
+> - Changed `uninstall.sh` — ZRAM restore handles `swapoff`, `reset`, `disksize`, `comp_algorithm`, and `max_comp_streams` in correct order.
+> - Changed `uninstall.sh` — replaced extension-based file deletion in `/data/user_de` and `/data` with system cache directory cleanup.
+> - Changed `uninstall.sh` — added `fstrim` across all major partitions on uninstall.
+> - Changed `uninstall.sh` — added `exit 0` at end of script.
+> - Changed `MODDIR` detection in `uninstall.sh` — replaced `cd/dirname/pwd` with `readlink -f`.
 > - Changed license from GNU General Public License to Apache License 2.0.
 > - Removed `hjggum.uaqona.iogbgn` package check from KernelSU Next detection in `customize.sh`.
-> - Removed inline root detection from `service.sh` — replaced by `.method` file reading.
-> - Removed `ANDROID_VERSION`, `ANDROID_SDK`, and emoji `case` block from `service.sh`.
-> - Removed `[FINAL]` tag injection from `service.sh`.
-> - Removed `Kernel Tweak` name injection from `service.sh`.
-> - Removed `/storage/emulated/0` junk file cleanup from `uninstall.sh` — avoids unintended deletion of user storage.
 > - Removed `SKIPUNZIP=1` and `DEBUG=false` from `customize.sh`.
 > - Removed `MODPATH` and `TMPDIR` fallback lines from `customize.sh`.
 > - Removed `print_time()` and `print_device()` standalone functions from `customize.sh`.
 > - Removed `detect_snapdragon()` function and Snapdragon-only abort from `customize.sh` — module now supports all SoC.
 > - Removed `SOC` variable and `ARCH` echo from `customize.sh`.
+> - Removed inline root detection from `service.sh` — replaced by `.method` file reading.
+> - Removed `ANDROID_VERSION`, `ANDROID_SDK`, and emoji `case` block from `service.sh`.
+> - Removed `[FINAL]` tag injection from `service.sh`.
+> - Removed `Kernel Tweak` name injection from `service.sh`.
+> - Removed `/storage/emulated/0` junk file cleanup from `uninstall.sh` — avoids unintended deletion of user storage.
 > - Removed `check_device()` from `cv` — no longer needed after Snapdragon restriction lifted.
 > - Removed `SDK` variable from `cv` — unused after `check_device()` removal.
-> - Removed `wait_boot()` from `cv` — redundant since `service.sh` already waits for `sys.boot_completed=1` before executing `cv`.
-> - Removed second `tune_governor()` call from `cv` `main()`.
 > - Removed `/data/local/tmp` from `cleanup_temp` in `cv` — avoids deleting files in use by ADB or tools.
 ---
 
@@ -82,6 +76,11 @@
 > - Changed installation message in `customize.sh` — updated to more professional wording.
 > - Changed cleanup directories — expanded for broader system coverage.
 > - Removed leftover SDK 28 check from `customize.sh`.
+---
+
+> [3.5.0]
+>
+> - Changed overall module structure — major overhaul covering all aspects of the module.
 ---
 
 > [3.0.0]
