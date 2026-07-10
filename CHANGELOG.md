@@ -21,9 +21,10 @@
 > - Changed shebang in `cv` from `#!/bin/sh` to `#!/system/bin/sh`.
 > - Changed `optimize_zram` in `cv` — added `/proc/swaps` check before reset to prevent race condition.
 > - Changed `detect_root_all()` structure in `customize.sh` — replaced `if/elif` chains with loop-based detection using `pkg:label` entries.
-> - Changed root detection order in `customize.sh` and `service.sh` — now APatch → KernelSU → Magisk (previously KernelSU → Magisk → APatch).
+> - Changed root detection order — now APatch → KernelSU → Magisk in both files (previously KernelSU → APatch → Magisk in `customize.sh`, KernelSU → Magisk → APatch in `service.sh`).
 > - Changed APatch `.method` file format in `customize.sh` and `service.sh` — expanded from 4 to 5 lines, adds `APATCH_APP_VER` on line 3.
-> - Changed `APATCH_VER_CODE` source in `customize.sh` — now read from `/data/adb/ap/version`, falls back to `.method` line 5 if unavailable.
+> - Changed `APATCH_VER_CODE` source in `customize.sh` — now read from `/data/adb/ap/version` via `su`.
+> - Added `APATCH_KERNEL_VER_CODE` fetch in `customize.sh` — queries the latest KernelPatch release tag from GitHub API, falls back to `.method` line 5 if the request fails.
 > - Changed `set_permissions()` in `customize.sh` — added `service.sh` to the executable permission loop.
 > - Changed `post_install_actions` in `customize.sh` — wrapped into a proper named function.
 > - Changed devil messages in `customize.sh` — expanded from 11 to 15 names, removed per-name descriptions.
@@ -39,7 +40,7 @@
 > - Changed `uninstall.sh` — added `exit 0` at end of script.
 > - Changed `MODDIR` detection in `uninstall.sh` — replaced `cd/dirname/pwd` with `readlink -f`.
 > - Changed license from GNU General Public License to Apache License 2.0.
-> - Removed `hjggum.uaqona.iogbgn` package check from KernelSU Next detection in `customize.sh`.
+> - Fixed `MODDIR` in `cv` — now accepts `MODDIR` as an argument (passed by `service.sh`), falling back to the original `cd/dirname/pwd` detection only when run without an argument. The old `$0`-only detection resolved to `/system/bin` when `cv` was invoked as an encrypted Go binary (Module & Plugin Encryption option) that executes the decrypted script via `sh -s --` on stdin, which reassigns `$0` to the shell path — causing `backup_val()` to fail writing backups outside the module directory.
 > - Removed `SKIPUNZIP=1` and `DEBUG=false` from `customize.sh`.
 > - Removed `MODPATH` and `TMPDIR` fallback lines from `customize.sh`.
 > - Removed `print_time()` and `print_device()` standalone functions from `customize.sh`.
@@ -53,6 +54,8 @@
 > - Removed `check_device()` from `cv` — no longer needed after Snapdragon restriction lifted.
 > - Removed `SDK` variable from `cv` — unused after `check_device()` removal.
 > - Removed `/data/local/tmp` from `cleanup_temp` in `cv` — avoids deleting files in use by ADB or tools.
+> - Added `verify_module_id()` to `verify.sh` — validates module `id`/`name` against the ZIP's `module.prop` before extraction, aborts on mismatch to deter repacking.
+> - Changed hash lookup in `verify.sh` — expanded from sha512/sha256-only to checking md5, sha512, sha384, sha256, sha224, sha1 in priority order.
 ---
 
 > [4.0.0]
